@@ -1,4 +1,3 @@
-# cloud-native-order-platform
 # Cloud-Native Order Processing Platform
  
 ## Overview
