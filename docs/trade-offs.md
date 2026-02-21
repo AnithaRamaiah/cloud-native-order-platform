@@ -1,6 +1,4 @@
 # Architectural Trade-offs
- 
-# Architectural Trade-offs
 
 ## Consistency vs Availability
 
