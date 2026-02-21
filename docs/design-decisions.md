@@ -1,30 +1,74 @@
 # Design Decisions & Rationale
  
-## Why Event-Driven Architecture?
-- Reduces tight coupling between services
-- Improves system resilience
-- Enables horizontal scalability
- 
-Trade-off: Eventual consistency and increased debugging complexity.
+# Design Decisions & Rationale
 
- 
+## Why Event-Driven Architecture?
+
+- Services are loosely coupled
+- Failures are isolated
+- System can scale horizontally
+- Enables asynchronous processing for write-heavy workloads
+
+Trade-off:
+- Eventual consistency
+- Increased debugging complexity
+- Requires strong observability
+
+---
+
 ## Why Database Per Service?
-- Prevents shared data coupling
-- Allows independent schema evolution
-- Enables better ownership boundaries
- 
-Trade-off: Complex cross-service queries, addressed via events and APIs.
- 
- 
-## Why API Gateway?
-- Centralized security
-- Simplified client interactions
-- Better traffic control and monitoring
- 
-Trade-off: Gateway becomes a critical component; mitigated through redundancy.
- 
- 
-## Why Spring Boot?
-- Mature ecosystem
-- Strong community support
-- Production-proven in enterprise systems
+
+- Prevents tight data coupling
+- Independent schema evolution
+- Clear ownership boundaries
+- Enables service-level scaling strategies
+
+Trade-off:
+- Complex cross-service queries
+- Requires events or API composition
+
+---
+
+## Why Sharding?
+
+The system is write-heavy. Vertical scaling has hardware limits.
+
+Sharding:
+- Distributes write load
+- Prevents single-node bottlenecks
+- Enables horizontal scale beyond hardware constraints
+
+Trade-off:
+- Operational complexity
+- Requires shard key strategy
+- Complex migrations
+
+---
+
+## Why Redis as Secondary Index?
+
+Global queries across services are expensive.
+
+Redis:
+- Fast lookup for aggregated views
+- Reduces database stress
+- Improves latency
+
+Trade-off:
+- Cache invalidation complexity
+- Eventual consistency window
+
+---
+
+## Why Bulk Stream Processing?
+
+Shift from individual message handling to bulk processing because:
+
+- Reduces IO overhead
+- Improves throughput
+- Increases partition-level parallelism
+- Enables compression efficiency
+
+Trade-off:
+- Slight latency increase
+- Requires batching strategy tuning
