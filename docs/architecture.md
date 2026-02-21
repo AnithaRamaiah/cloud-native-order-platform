@@ -1,59 +1,51 @@
 # 📂 docs/architecture.md
  
-```markdown
-# Architecture Overview
- 
-## Architectural Style
-The system follows a **microservices architecture** with:
-- Independent deployability
-- Decentralized data management
-- Event-driven communication
- 
-This approach supports scalability, team autonomy, and faster evolution.
- 
-## Key Architectural Principles
- 
-1. **Single Responsibility per Service**
-2. **Loose Coupling via Events**
-3. **Infrastructure as Code**
-4. **Cloud-first Design**
- 
-## Service Interaction Flow
- 
-1. Client sends request to API Gateway
-2. Gateway authenticates and routes request
-3. Order Service validates and creates order
-4. OrderPlaced event is published
-5. Payment and Inventory services react asynchronously
- 
-## Why Microservices?
- 
-Chosen to:
-- Scale individual components independently
-- Allow parallel team development
-- Improve system resilience
+# System Architecture Overview
 
-## System Invariants
+## High-Level Architecture
 
-- An order must never be double charged.
-- An order must eventually reach a terminal state.
-- Payment and order state must not diverge permanently.
-- Events must be idempotent.
+This system follows an event-driven microservices architecture deployed on Kubernetes.
 
-## Failure Scenarios & Handling
+### Core Principles
+- Loose coupling via asynchronous communication
+- Database per service for isolation
+- Horizontal scalability
+- Cloud-native deployment model
 
-- Payment crash after charge
-- Duplicate event delivery
-- Refund failure
-- Broker lag
-- DB shard imbalance
+## Major Components
 
-## Observability Strategy
+### API Gateway
+- Single entry point for clients
+- Handles authentication, routing, rate limiting
+- Prevents direct access to internal services
 
-- Trace propagation across async boundaries
-- Business metrics vs infra metrics
-- Stuck workflow detection
-- Saga latency histogram
-- Alert philosophy
- 
-Trade-off: Increased operational complexity, mitigated via automation and observability.
+### Microservices
+Each service:
+- Owns its database
+- Exposes REST APIs for synchronous calls
+- Publishes domain events for asynchronous workflows
+
+### Messaging Layer
+- Kafka used for event streaming
+- Supports producer batching and partitioning
+- Enables bulk stream processing instead of per-message handling
+
+### Databases
+- Primary database per service
+- Write-optimized configuration
+- Sharding strategy for scale
+
+### Caching Layer
+- Redis used as a secondary index for global lookups
+- Reduces cross-service read complexity
+
+### Analytics & Reporting
+- ETL pipeline moves data into warehouse
+- Materialized views for cross-customer reporting
+
+## Deployment Architecture
+
+- Containerized services
+- Kubernetes orchestration
+- Horizontal Pod Autoscaling
+- Multi-AZ deployment for high availability
