@@ -27,7 +27,62 @@ The platform consists of the following components:
  
 Each service is **independently deployable** and owns its own data store.
  
-(Architecture diagram image)
+                        ┌──────────────────────────┐
+                        │        Client Apps       │
+                        │  (Web / Mobile / API)    │
+                        └─────────────┬────────────┘
+                                      │
+                                      ▼
+                        ┌──────────────────────────┐
+                        │       API Gateway        │
+                        │  (Auth, Rate limit, TLS) │
+                        └─────────────┬────────────┘
+                                      │
+                                      ▼
+                     ┌─────────────────────────────────┐
+                     │          Order Service          │
+                     │  - REST API                     │
+                     │  - Order State Machine          │
+                     │  - Idempotency Handling         │
+                     │  - Outbox Pattern               │
+                     └─────────────┬───────────────────┘
+                                   │
+                    Writes Order + │ Publishes Event (via Outbox)
+                                   ▼
+                       ┌──────────────────────┐
+                       │   Message Broker     │
+                       │ (Kafka / SNS+SQS)    │
+                       └────────┬─────────────┘
+                                │
+        ┌───────────────────────┼────────────────────────┐
+        ▼                       ▼                        ▼
+    ┌───────────────┐       ┌───────────────┐        ┌────────────────┐
+    │ Payment       │       │ Inventory     │        │ Notification   │
+    │ Service       │       │ Service       │        │ Service        │
+    │ - Async proc  │       │ - Reserve     │        │ - Email/SMS    │
+    │ - Retry       │       │ - Deduct      │        │ - Best effort  │
+    │ - Compensation│       │ - Release     │        │                │
+    └──────┬────────┘       └──────┬────────┘        └────────────────┘
+           │                       │
+           ▼                       ▼
+    Payment DB               Inventory DB
+
+
+Observability Layer (Cross-Cutting)
+------------------------------------
+- OpenTelemetry (Tracing)
+- Prometheus (Metrics)
+- Structured Logging
+- Correlation IDs
+- Continuous Profiling (Pyroscope)
+
+Infrastructure Layer
+---------------------
+- Kubernetes (EKS)
+- HPA (CPU + custom metrics)
+- PodDisruptionBudget
+- ConfigMaps / Secrets
+- CI/CD pipeline
  
 ---
  
